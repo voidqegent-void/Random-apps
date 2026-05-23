@@ -48,7 +48,7 @@ int main() {
     cout << "To close type- 'exit'\n";
     cout << "===================================================\n\n";
 
-    ofstream outFile("notes_log.txt", ios::app);
+    ofstream outFile("log.txt", ios::app);
     if (!outFile.is_open()) {
         cout << "Error:Log File Failed\n";
         return 1;
